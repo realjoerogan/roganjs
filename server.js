@@ -1,8 +1,8 @@
 http = require('http');
 fs = require('fs');
 
-port = 3000;
-host = '127.0.0.1';
+port = 8792;
+host = '0.0.0.0';
 lastMessage = {};
 
 server = http.createServer(function (req, res) {
@@ -17,15 +17,43 @@ server = http.createServer(function (req, res) {
         });
         req.on('end', function () {
             var parsed = JSON.parse(body);
-            lastMessage = parsed;
-            console.log("DEBUG in POST:", lastMessage);
-            console.log("POST payload: " + body);
+            
+            if ((!parsed.map) || (parsed.map.phase == "gameover")) {
+                console.log("Deleting data for ", parsed.provider.steamid);
+                delete lastMessage[parsed.provider.steamid];
+            } else {
+                parsed.lastUpdated = new Date();
+
+                if (! lastMessage[parsed.provider.steamid]) {
+                    lastMessage[parsed.provider.steamid] = [];
+                }
+    
+                providerMessages = lastMessage[parsed.provider.steamid];
+                // providerMessages.push(parsed);
+                providerMessages = new Array(parsed);
+                
+                if (parsed.map){
+                    console.log("DEBUG: providerId=", parsed.provider.steamid, " CT - T : ", parsed.map.team_ct.score, "-", parsed.map.team_t.score);
+                }
+    
+                lastMessage[parsed.provider.steamid] = providerMessages;
+                console.log("Provider ", parsed.provider.steamid ," records: ", providerMessages.length - 1);
+                // for (i = providerMessages.length - 1; i >= 0; --i) {
+                //     console.log("DEBUG: ", (new Date()), "-", providerMessages[i].lastUpdated, "=", ((new Date()) - providerMessages[i].lastUpdated));
+                //     if (((new Date()) - providerMessages[i].lastUpdated) > 0000) {
+                //         console.log("DEBUG: Deleting dead record: ", providerMessages[i].provider.steamid, " lastUpdated: ")
+                //         providerMessages.splice(i, 1); // Remove dead provider record.
+                //     }
+                // }    
+            }
+    
             res.end('');
         });
     }
     else if (req.method == 'GET') {
         console.log("Handling GET request...");
-        console.log("DEBUG in GET:", lastMessage);
+
+        // console.log("DEBUG in GET:", lastMessage);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(lastMessage));
     }

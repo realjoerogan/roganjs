@@ -38,13 +38,6 @@ server = http.createServer(function (req, res) {
     
                 lastMessage[parsed.provider.steamid] = providerMessages;
                 console.log("Provider ", parsed.provider.steamid ," records: ", providerMessages.length - 1);
-                // for (i = providerMessages.length - 1; i >= 0; --i) {
-                //     console.log("DEBUG: ", (new Date()), "-", providerMessages[i].lastUpdated, "=", ((new Date()) - providerMessages[i].lastUpdated));
-                //     if (((new Date()) - providerMessages[i].lastUpdated) > 0000) {
-                //         console.log("DEBUG: Deleting dead record: ", providerMessages[i].provider.steamid, " lastUpdated: ")
-                //         providerMessages.splice(i, 1); // Remove dead provider record.
-                //     }
-                // }    
             }
     
             res.end('');
